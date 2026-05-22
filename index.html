@@ -4,6 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
   <meta name="theme-color" content="#050506">
+  <link rel="icon" type="image/png" href="assets/favicon.png">
+  <link rel="apple-touch-icon" href="assets/favicon.png">
   <title>Live Translator</title>
   <style>
     :root {
@@ -1274,22 +1276,37 @@
     }
 
     async function openaiFetch(url, options) {
-      const response = await fetch(url, {
-        ...options,
-        headers: {
-          Authorization: `Bearer ${openAiApiKey()}`,
-          ...(options.headers || {})
+      let response;
+      try {
+        response = await fetch(url, {
+          ...options,
+          headers: {
+            Authorization: `Bearer ${openAiApiKey()}`,
+            ...(options.headers || {})
+          }
+        });
+      } catch (error) {
+        if (apiKeySuffix()) {
+          throw new Error("Wrong API Key");
         }
-      });
+        throw new Error("OpenAI request failed. Check your internet connection.");
+      }
 
       if (!response.ok) {
         let detail = "";
+        let code = "";
         try {
           const errorJson = await response.json();
+          code = errorJson.error?.code || "";
           detail = errorJson.error?.message || JSON.stringify(errorJson);
         } catch (error) {
           detail = await response.text();
         }
+
+        if (response.status === 401 || code === "invalid_api_key" || /incorrect api key|invalid api key/i.test(detail)) {
+          throw new Error("Wrong API Key");
+        }
+
         throw new Error(detail || `OpenAI request failed with status ${response.status}`);
       }
 
