@@ -20,6 +20,7 @@
       --blue: #64d2ff;
       --green: #5de58b;
       --shadow: rgba(0, 0, 0, 0.5);
+      --divider: rgba(255, 255, 255, 0.34);
       --safe-top: env(safe-area-inset-top, 0px);
       --safe-bottom: env(safe-area-inset-bottom, 0px);
       --safe-left: env(safe-area-inset-left, 0px);
@@ -76,7 +77,7 @@
     .lock-panel {
       width: min(390px, 100%);
       display: grid;
-      gap: 18px;
+      gap: 20px;
       text-align: center;
     }
 
@@ -158,6 +159,24 @@
       background-size: 28px 28px, 100% 100%;
     }
 
+    .app::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 50%;
+      height: 3px;
+      z-index: 4;
+      pointer-events: none;
+      background:
+        linear-gradient(90deg, rgba(255, 255, 255, 0.08), var(--divider), rgba(255, 255, 255, 0.08)),
+        linear-gradient(180deg, transparent, rgba(0, 0, 0, 0.35));
+      box-shadow:
+        0 -1px 0 rgba(255, 255, 255, 0.09),
+        0 1px 12px rgba(0, 0, 0, 0.55);
+      transform: translateY(-50%);
+    }
+
     .app.locked {
       visibility: hidden;
     }
@@ -166,7 +185,7 @@
       min-height: 0;
       position: relative;
       display: grid;
-      grid-template-rows: auto 1fr auto;
+      grid-template-rows: 1fr auto;
       overflow: hidden;
       isolation: isolate;
       background:
@@ -176,36 +195,26 @@
 
     .side.top {
       transform: rotate(180deg);
-      border-top: 1px solid var(--line);
     }
 
     .side.bottom {
-      border-top: 1px solid var(--line);
       padding-bottom: var(--safe-bottom);
     }
 
     .top .side-shell {
-      padding: calc(12px + var(--safe-bottom)) calc(14px + var(--safe-left)) 12px calc(14px + var(--safe-right));
+      padding: calc(13px + var(--safe-bottom)) calc(14px + var(--safe-left)) 12px calc(14px + var(--safe-right));
     }
 
     .bottom .side-shell {
-      padding: 12px calc(14px + var(--safe-right)) calc(12px + var(--safe-bottom)) calc(14px + var(--safe-left));
+      padding: 12px calc(14px + var(--safe-right)) calc(13px + var(--safe-bottom)) calc(14px + var(--safe-left));
     }
 
     .side-shell {
       min-height: 0;
       display: grid;
-      grid-template-rows: auto 1fr auto;
-      gap: 10px;
-      overflow: hidden;
-    }
-
-    .side-header {
-      min-height: 34px;
-      display: grid;
-      grid-template-columns: 44px 1fr 44px;
-      align-items: center;
+      grid-template-rows: 1fr auto;
       gap: 8px;
+      overflow: hidden;
     }
 
     .icon-button {
@@ -225,36 +234,65 @@
       transform: scale(0.97);
     }
 
-    .language-label {
-      justify-self: center;
-      display: flex;
-      align-items: baseline;
-      justify-content: center;
-      gap: 8px;
-      min-width: 0;
+    .center-menu-button,
+    .floating-language-button {
+      position: absolute;
+      z-index: 7;
+      width: 42px;
+      height: 42px;
+      display: grid;
+      place-items: center;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.1);
+      color: var(--text);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.12),
+        0 10px 28px rgba(0, 0, 0, 0.28);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
     }
 
-    .language-label strong {
-      font-size: clamp(16px, 4vw, 20px);
-      font-weight: 680;
-      white-space: nowrap;
+    .center-menu-button {
+      left: calc(12px + var(--safe-left));
+      top: 50%;
+      transform: translateY(-50%);
     }
 
-    .language-label span {
-      color: var(--dim);
-      font-size: 12px;
-      font-weight: 650;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
+    .floating-language-button {
+      left: calc(62px + var(--safe-left));
+      font-size: 20px;
+      line-height: 1;
+    }
+
+    .floating-language-button.top-language {
+      top: calc(50% - 27px);
+      transform: translateY(-100%) rotate(180deg);
+    }
+
+    .floating-language-button.bottom-language {
+      top: calc(50% + 27px);
     }
 
     .chat {
       min-height: 0;
-      overflow: hidden;
+      overflow-x: hidden;
+      overflow-y: auto;
       display: flex;
       flex-direction: column;
       gap: 8px;
       padding: 2px 2px 4px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+      overscroll-behavior: contain;
+    }
+
+    .chat::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .chat::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.22);
+      border-radius: 999px;
     }
 
     .empty-state {
@@ -315,24 +353,10 @@
     .controls {
       display: grid;
       grid-template-columns: 1fr auto 1fr;
-      align-items: center;
+      align-items: end;
       gap: 10px;
-      min-height: 86px;
+      min-height: 82px;
       position: relative;
-    }
-
-    .status {
-      min-width: 0;
-      color: var(--muted);
-      font-size: 13px;
-      line-height: 1.25;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    .status.right {
-      text-align: right;
     }
 
     .record-wrap {
@@ -395,7 +419,7 @@
 
     .intake-field {
       position: absolute;
-      inset: -26px;
+      inset: -48px;
       opacity: 0;
       pointer-events: none;
       transition: opacity 180ms ease;
@@ -410,30 +434,40 @@
       position: absolute;
       left: 50%;
       top: 50%;
-      width: 7px;
-      height: 7px;
+      width: 9px;
+      height: 9px;
       border-radius: 999px;
       background: rgba(255, 255, 255, 0.82);
-      box-shadow: 0 0 20px rgba(100, 210, 255, 0.58);
-      animation: intake 1.25s cubic-bezier(0.36, 0, 0.26, 1) infinite;
+      box-shadow:
+        0 0 18px rgba(100, 210, 255, 0.82),
+        0 0 38px rgba(255, 255, 255, 0.28);
+      animation: intake 1.05s cubic-bezier(0.36, 0, 0.26, 1) infinite;
     }
 
-    .intake-field span:nth-child(1) { --x: -44px; --y: -22px; animation-delay: 0ms; }
-    .intake-field span:nth-child(2) { --x: 39px; --y: -27px; animation-delay: 130ms; }
-    .intake-field span:nth-child(3) { --x: -50px; --y: 18px; animation-delay: 260ms; }
-    .intake-field span:nth-child(4) { --x: 47px; --y: 16px; animation-delay: 390ms; }
-    .intake-field span:nth-child(5) { --x: -20px; --y: -48px; animation-delay: 520ms; }
-    .intake-field span:nth-child(6) { --x: 18px; --y: 48px; animation-delay: 650ms; }
+    .side.bottom .intake-field span:nth-child(1) { --x: -62px; --y: 62px; animation-delay: 0ms; }
+    .side.bottom .intake-field span:nth-child(2) { --x: -28px; --y: 74px; animation-delay: 90ms; }
+    .side.bottom .intake-field span:nth-child(3) { --x: 34px; --y: 70px; animation-delay: 180ms; }
+    .side.bottom .intake-field span:nth-child(4) { --x: 68px; --y: 54px; animation-delay: 270ms; }
+    .side.bottom .intake-field span:nth-child(5) { --x: -4px; --y: 88px; animation-delay: 360ms; }
+    .side.bottom .intake-field span:nth-child(6) { --x: 8px; --y: 66px; animation-delay: 450ms; }
+
+    .side.top .intake-field span:nth-child(1) { --x: -62px; --y: 62px; animation-delay: 0ms; }
+    .side.top .intake-field span:nth-child(2) { --x: -28px; --y: 74px; animation-delay: 90ms; }
+    .side.top .intake-field span:nth-child(3) { --x: 34px; --y: 70px; animation-delay: 180ms; }
+    .side.top .intake-field span:nth-child(4) { --x: 68px; --y: 54px; animation-delay: 270ms; }
+    .side.top .intake-field span:nth-child(5) { --x: -4px; --y: 88px; animation-delay: 360ms; }
+    .side.top .intake-field span:nth-child(6) { --x: 8px; --y: 66px; animation-delay: 450ms; }
 
     .cancel-button {
       justify-self: start;
-      height: 38px;
-      padding: 0 14px;
+      width: 42px;
+      height: 42px;
+      padding: 0;
+      display: grid;
+      place-items: center;
       border-radius: 999px;
       background: rgba(255, 255, 255, 0.1);
       color: rgba(255, 255, 255, 0.86);
-      font-size: 13px;
-      font-weight: 650;
       opacity: 0;
       pointer-events: none;
       transform: translateY(4px);
@@ -507,21 +541,6 @@
       gap: 12px;
     }
 
-    .drawer-title {
-      display: grid;
-      gap: 2px;
-    }
-
-    .drawer-title strong {
-      font-size: 19px;
-      letter-spacing: 0;
-    }
-
-    .drawer-title span {
-      color: var(--dim);
-      font-size: 12px;
-    }
-
     .drawer-content {
       display: grid;
       align-content: start;
@@ -574,13 +593,6 @@
       gap: 9px;
       background: rgba(255, 255, 255, 0.09);
       font-weight: 660;
-    }
-
-    .privacy-note {
-      margin: 0;
-      color: var(--muted);
-      font-size: 13px;
-      line-height: 1.45;
     }
 
     .unsupported {
@@ -657,10 +669,6 @@
         gap: 7px;
       }
 
-      .side-header {
-        min-height: 30px;
-      }
-
       .icon-button {
         width: 36px;
         height: 36px;
@@ -694,28 +702,27 @@
 </head>
 <body>
   <main id="app" class="app locked" aria-label="Live Translator">
+    <button class="center-menu-button" type="button" id="centerMenu" aria-label="Open menu">
+      <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M4 7h16M4 12h16M4 17h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+    </button>
+    <button class="floating-language-button top-language" type="button" data-language-button="top" aria-label="Upper language">🇺🇸</button>
+    <button class="floating-language-button bottom-language" type="button" data-language-button="bottom" aria-label="Lower language">🇩🇪</button>
+
     <section class="side top" data-side="top">
       <div class="processing-wash"></div>
       <div class="side-shell">
-        <header class="side-header">
-          <button class="icon-button menu-toggle" type="button" aria-label="Open menu">
-            <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M4 7h16M4 12h16M4 17h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            </svg>
-          </button>
-          <div class="language-label" aria-live="polite">
-            <strong data-language-name="top">English</strong>
-            <span data-status="top">Ready</span>
-          </div>
-          <div aria-hidden="true"></div>
-        </header>
-
         <div class="chat" data-chat="top" aria-live="polite">
           <div class="empty-state" data-empty="top">Conversation appears here</div>
         </div>
 
         <div class="controls">
-          <button class="cancel-button" type="button" data-cancel="top">Cancel</button>
+          <button class="cancel-button" type="button" data-cancel="top" aria-label="Cancel recording">
+            <svg width="19" height="19" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M9 4h6m-8 3h10m-9 0 .7 13h6.6L16 7M10 11v5m4-5v5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
           <div class="record-wrap" data-record-wrap="top">
             <div class="intake-field" aria-hidden="true">
               <span></span><span></span><span></span><span></span><span></span><span></span>
@@ -725,7 +732,6 @@
               <span class="stop-icon" aria-hidden="true"></span>
             </button>
           </div>
-          <div class="status right" data-substatus="top">Tap to record</div>
         </div>
       </div>
     </section>
@@ -733,25 +739,16 @@
     <section class="side bottom" data-side="bottom">
       <div class="processing-wash"></div>
       <div class="side-shell">
-        <header class="side-header">
-          <button class="icon-button menu-toggle" type="button" aria-label="Open menu">
-            <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M4 7h16M4 12h16M4 17h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            </svg>
-          </button>
-          <div class="language-label" aria-live="polite">
-            <strong data-language-name="bottom">Deutsch</strong>
-            <span data-status="bottom">Ready</span>
-          </div>
-          <div aria-hidden="true"></div>
-        </header>
-
         <div class="chat" data-chat="bottom" aria-live="polite">
           <div class="empty-state" data-empty="bottom">Gespräch erscheint hier</div>
         </div>
 
         <div class="controls">
-          <button class="cancel-button" type="button" data-cancel="bottom">Cancel</button>
+          <button class="cancel-button" type="button" data-cancel="bottom" aria-label="Cancel recording">
+            <svg width="19" height="19" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M9 4h6m-8 3h10m-9 0 .7 13h6.6L16 7M10 11v5m4-5v5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
           <div class="record-wrap" data-record-wrap="bottom">
             <div class="intake-field" aria-hidden="true">
               <span></span><span></span><span></span><span></span><span></span><span></span>
@@ -761,7 +758,6 @@
               <span class="stop-icon" aria-hidden="true"></span>
             </button>
           </div>
-          <div class="status right" data-substatus="bottom">Tap to record</div>
         </div>
       </div>
     </section>
@@ -776,7 +772,6 @@
         </svg>
       </div>
       <h1>Live Translator</h1>
-      <p>Private MVP preview.</p>
       <div class="password-row">
         <input id="passwordInput" type="password" autocomplete="current-password" placeholder="Password" aria-label="Password">
         <button class="unlock-button" type="submit" aria-label="Unlock">
@@ -792,10 +787,7 @@
   <div class="menu-backdrop" id="menuBackdrop"></div>
   <aside class="drawer" id="drawer" aria-label="Settings menu" aria-hidden="true">
     <div class="drawer-header">
-      <div class="drawer-title">
-        <strong>Settings</strong>
-        <span>Prototype mode</span>
-      </div>
+      <div></div>
       <button class="icon-button" type="button" id="closeMenu" aria-label="Close menu">
         <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
           <path d="M6 6l12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
@@ -812,28 +804,24 @@
       </button>
 
       <section class="menu-section">
-        <h2>Languages</h2>
         <div class="select-row">
           <label for="topLanguage">Upper side</label>
           <select id="topLanguage">
-            <option value="en">English</option>
-            <option value="de">Deutsch</option>
-            <option value="it">Italiano</option>
+            <option value="en">English 🇺🇸</option>
+            <option value="de">Deutsch 🇩🇪</option>
+            <option value="it">Italiano 🇮🇹</option>
+            <option value="vi">Tiếng Việt 🇻🇳</option>
           </select>
         </div>
         <div class="select-row">
           <label for="bottomLanguage">Lower side</label>
           <select id="bottomLanguage">
-            <option value="de">Deutsch</option>
-            <option value="en">English</option>
-            <option value="it">Italiano</option>
+            <option value="de">Deutsch 🇩🇪</option>
+            <option value="en">English 🇺🇸</option>
+            <option value="it">Italiano 🇮🇹</option>
+            <option value="vi">Tiếng Việt 🇻🇳</option>
           </select>
         </div>
-      </section>
-
-      <section class="menu-section">
-        <h2>Privacy</h2>
-        <p class="privacy-note">This prototype does not save conversations. Current messages exist only on this screen until New Chat or reload.</p>
       </section>
 
       <div class="unsupported" id="unsupportedMessage"></div>
@@ -844,15 +832,17 @@
     const APP_PASSWORD = "helpme";
 
     const languages = {
-      de: { name: "Deutsch", locale: "de-DE", empty: "Gespräch erscheint hier" },
-      en: { name: "English", locale: "en-US", empty: "Conversation appears here" },
-      it: { name: "Italiano", locale: "it-IT", empty: "La conversazione appare qui" }
+      de: { name: "Deutsch", locale: "de-DE", flag: "🇩🇪", empty: "Gespräch erscheint hier" },
+      en: { name: "English", locale: "en-US", flag: "🇺🇸", empty: "Conversation appears here" },
+      it: { name: "Italiano", locale: "it-IT", flag: "🇮🇹", empty: "La conversazione appare qui" },
+      vi: { name: "Tiếng Việt", locale: "vi-VN", flag: "🇻🇳", empty: "Cuộc trò chuyện xuất hiện ở đây" }
     };
 
     const demoTranslations = {
       de: "Hallo, wie geht es dir?",
       en: "Hello, how are you?",
-      it: "Ciao, come stai?"
+      it: "Ciao, come stai?",
+      vi: "Xin chào, bạn khỏe không?"
     };
 
     const state = {
@@ -916,8 +906,14 @@
     }
 
     function setStatus(side, label, detail) {
-      document.querySelector(`[data-status="${side}"]`).textContent = label;
-      document.querySelector(`[data-substatus="${side}"]`).textContent = detail;
+      const status = document.querySelector(`[data-status="${side}"]`);
+      const substatus = document.querySelector(`[data-substatus="${side}"]`);
+      if (status) {
+        status.textContent = label;
+      }
+      if (substatus) {
+        substatus.textContent = detail;
+      }
     }
 
     function chooseMimeType() {
@@ -954,7 +950,11 @@
     function updateLanguageLabels() {
       ["top", "bottom"].forEach((side) => {
         const lang = languages[languageForSide(side)];
-        document.querySelector(`[data-language-name="${side}"]`).textContent = lang.name;
+        const button = document.querySelector(`[data-language-button="${side}"]`);
+        if (button) {
+          button.textContent = lang.flag;
+          button.setAttribute("aria-label", `${side === "top" ? "Upper" : "Lower"} language: ${lang.name}`);
+        }
         const empty = document.querySelector(`[data-empty="${side}"]`);
         if (empty) {
           empty.textContent = lang.empty;
@@ -1157,6 +1157,32 @@
       closeMenu();
     }
 
+    function hasConversation() {
+      return state.messages.top.length > 0 || state.messages.bottom.length > 0;
+    }
+
+    function applyLanguageChange(side, value, selectElement) {
+      const stateKey = side + "Language";
+      if (state[stateKey] === value) {
+        return;
+      }
+
+      if (hasConversation()) {
+        const shouldStartNew = window.confirm("Changing the language starts a new chat. Continue?");
+        if (!shouldStartNew) {
+          selectElement.value = state[stateKey];
+          return;
+        }
+        state.messages.top = [];
+        state.messages.bottom = [];
+      }
+
+      state[stateKey] = value;
+      updateLanguageLabels();
+      renderChat("top");
+      renderChat("bottom");
+    }
+
     lockForm.addEventListener("submit", (event) => {
       event.preventDefault();
       if (passwordInput.value === APP_PASSWORD) {
@@ -1170,7 +1196,8 @@
       }
     });
 
-    document.querySelectorAll(".menu-toggle").forEach((button) => {
+    document.getElementById("centerMenu").addEventListener("click", openMenu);
+    document.querySelectorAll("[data-language-button]").forEach((button) => {
       button.addEventListener("click", openMenu);
     });
 
@@ -1179,15 +1206,11 @@
     document.getElementById("newChat").addEventListener("click", resetChat);
 
     document.getElementById("topLanguage").addEventListener("change", (event) => {
-      state.topLanguage = event.target.value;
-      updateLanguageLabels();
-      renderChat("top");
+      applyLanguageChange("top", event.target.value, event.target);
     });
 
     document.getElementById("bottomLanguage").addEventListener("change", (event) => {
-      state.bottomLanguage = event.target.value;
-      updateLanguageLabels();
-      renderChat("bottom");
+      applyLanguageChange("bottom", event.target.value, event.target);
     });
 
     ["top", "bottom"].forEach((side) => {
