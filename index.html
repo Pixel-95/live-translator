@@ -918,6 +918,10 @@
 
   <script>
     const APP_PASSWORD = "helpme";
+    const USE_REAL_OPENAI_API = true;
+    const OPENAI_API_KEY = "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";
+    const OPENAI_STT_MODEL = "gpt-4o-mini-transcribe";
+    const OPENAI_TRANSLATION_MODEL = "gpt-4o-mini";
 
     const languages = {
       de: { name: "Deutsch", locale: "de-DE", flag: "🇩🇪", empty: "Gespräch erscheint hier" },
@@ -939,6 +943,7 @@
       recorder: null,
       stream: null,
       chunks: [],
+      isProcessing: false,
       supportError: "",
       topLanguage: "vi",
       bottomLanguage: "de",
@@ -996,6 +1001,10 @@
 
     function languageForSide(side) {
       return state[side + "Language"];
+    }
+
+    function languageCode(lang) {
+      return languages[lang].locale.split("-")[0];
     }
 
     function setStatus(side, label, detail) {
@@ -1133,6 +1142,12 @@
       setStatus(side, isProcessing ? "Processing" : "Ready", isProcessing ? "Transcribing" : "Tap to record");
     }
 
+    function setInteractionDisabled(disabled) {
+      ["top", "bottom"].forEach((side) => {
+        recordButtons[side].disabled = disabled;
+      });
+    }
+
     async function startRecording(side) {
       if (state.supportError) {
         setStatus(side, "Error", "Recording unavailable");
@@ -1181,11 +1196,18 @@
         return;
       }
 
-      state.recorder.stop();
+      const recorder = state.recorder;
+      recorder.addEventListener("stop", () => {
+        const mimeType = recorder.mimeType || state.chunks[0]?.type || "";
+        const audioBlob = new Blob(state.chunks, { type: mimeType || "audio/webm" });
+        state.chunks = [];
+        processRecording(side, audioBlob, mimeType);
+      }, { once: true });
+
+      recorder.stop();
       state.recorder = null;
       state.activeSide = null;
       setRecordingUi(side, false);
-      simulateProcessing(side);
     }
 
     function cancelRecording(side) {
@@ -1205,34 +1227,168 @@
       setRecordingUi(side, false);
     }
 
-    function simulateProcessing(sourceSide) {
+    function addTranslatedMessage(sourceSide, sourceText, targetText) {
       const targetSide = oppositeSide(sourceSide);
       const sourceLang = languageForSide(sourceSide);
       const targetLang = languageForSide(targetSide);
-      const sourceText = demoTranslations[sourceLang];
-      const targetText = demoTranslations[targetLang];
 
+      state.messages[sourceSide].push({
+        side: sourceSide,
+        lang: sourceLang,
+        text: sourceText
+      });
+      state.messages[targetSide].push({
+        side: sourceSide,
+        lang: targetLang,
+        text: targetText
+      });
+
+      renderChat(sourceSide);
+      renderChat(targetSide);
+      speak(targetText, languages[targetLang].locale);
+    }
+
+    function audioFileName(mimeType) {
+      const type = (mimeType || "").toLowerCase();
+      if (type.includes("webm")) return "recording.webm";
+      if (type.includes("mp4")) return "recording.mp4";
+      if (type.includes("m4a") || type.includes("aac")) return "recording.m4a";
+      if (type.includes("mpeg")) return "recording.mp3";
+      if (type.includes("wav")) return "recording.wav";
+      return "recording.webm";
+    }
+
+    async function openaiFetch(url, options) {
+      const response = await fetch(url, {
+        ...options,
+        headers: {
+          Authorization: `Bearer ${OPENAI_API_KEY}`,
+          ...(options.headers || {})
+        }
+      });
+
+      if (!response.ok) {
+        let detail = "";
+        try {
+          const errorJson = await response.json();
+          detail = errorJson.error?.message || JSON.stringify(errorJson);
+        } catch (error) {
+          detail = await response.text();
+        }
+        throw new Error(detail || `OpenAI request failed with status ${response.status}`);
+      }
+
+      return response.json();
+    }
+
+    async function transcribeAudio(audioBlob, sourceLang, mimeType) {
+      if (!OPENAI_API_KEY || OPENAI_API_KEY.includes("PASTE_")) {
+        throw new Error("OpenAI API key is missing.");
+      }
+
+      if (!audioBlob.size) {
+        throw new Error("No audio was recorded.");
+      }
+
+      const formData = new FormData();
+      formData.append("model", OPENAI_STT_MODEL);
+      formData.append("language", languageCode(sourceLang));
+      formData.append("response_format", "json");
+      formData.append("file", audioBlob, audioFileName(mimeType || audioBlob.type));
+
+      const data = await openaiFetch("https://api.openai.com/v1/audio/transcriptions", {
+        method: "POST",
+        body: formData
+      });
+
+      const transcript = (data.text || "").trim();
+      if (!transcript) {
+        throw new Error("OpenAI returned an empty transcript.");
+      }
+      return transcript;
+    }
+
+    function responseText(data) {
+      if (typeof data.output_text === "string") {
+        return data.output_text.trim();
+      }
+
+      if (Array.isArray(data.output)) {
+        for (const item of data.output) {
+          if (!Array.isArray(item.content)) continue;
+          for (const content of item.content) {
+            if (typeof content.text === "string") {
+              return content.text.trim();
+            }
+          }
+        }
+      }
+
+      return "";
+    }
+
+    async function translateText(text, sourceLang, targetLang) {
+      const source = languages[sourceLang].name;
+      const target = languages[targetLang].name;
+      const data = await openaiFetch("https://api.openai.com/v1/responses", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          model: OPENAI_TRANSLATION_MODEL,
+          input: [
+            {
+              role: "system",
+              content: "You are a precise translation engine for a live conversation app. Return only the translated text, with no explanations, labels, markdown, or quotation marks. Preserve meaning, tone, names, numbers, and punctuation."
+            },
+            {
+              role: "user",
+              content: `Translate this ${source} text into ${target}:\n\n${text}`
+            }
+          ],
+          max_output_tokens: 300
+        })
+      });
+
+      const translated = responseText(data);
+      if (!translated) {
+        throw new Error("OpenAI returned an empty translation.");
+      }
+      return translated;
+    }
+
+    async function processRecording(sourceSide, audioBlob, mimeType) {
+      const targetSide = oppositeSide(sourceSide);
+      const sourceLang = languageForSide(sourceSide);
+      const targetLang = languageForSide(targetSide);
+
+      if (state.isProcessing) {
+        return;
+      }
+
+      state.isProcessing = true;
+      setInteractionDisabled(true);
       setProcessing(sourceSide, true);
       setStatus(targetSide, "Translating", "Receiving message");
 
-      window.setTimeout(() => {
-        state.messages[sourceSide].push({
-          side: sourceSide,
-          lang: sourceLang,
-          text: sourceText
-        });
-        state.messages[targetSide].push({
-          side: sourceSide,
-          lang: targetLang,
-          text: targetText
-        });
-
-        renderChat(sourceSide);
-        renderChat(targetSide);
+      try {
+        if (USE_REAL_OPENAI_API) {
+          const sourceText = await transcribeAudio(audioBlob, sourceLang, mimeType);
+          const targetText = await translateText(sourceText, sourceLang, targetLang);
+          addTranslatedMessage(sourceSide, sourceText, targetText);
+        } else {
+          await new Promise((resolve) => window.setTimeout(resolve, 760));
+          addTranslatedMessage(sourceSide, demoTranslations[sourceLang], demoTranslations[targetLang]);
+        }
+      } catch (error) {
+        showRecordingNotice(error.message || "The recording could not be translated.");
+      } finally {
+        state.isProcessing = false;
+        setInteractionDisabled(false);
         setProcessing(sourceSide, false);
         setStatus(targetSide, "Ready", "Tap to record");
-        speak(targetText, languages[targetLang].locale);
-      }, 760);
+      }
     }
 
     function speak(text, locale) {
