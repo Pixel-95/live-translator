@@ -896,21 +896,11 @@
       <section class="menu-section">
         <div class="select-row">
           <label for="topLanguage">Upper side</label>
-          <select id="topLanguage">
-            <option value="vi">Tiếng Việt 🇻🇳</option>
-            <option value="en">English 🇬🇧</option>
-            <option value="de">Deutsch 🇩🇪</option>
-            <option value="it">Italiano 🇮🇹</option>
-          </select>
+          <select id="topLanguage"></select>
         </div>
         <div class="select-row">
           <label for="bottomLanguage">Lower side</label>
-          <select id="bottomLanguage">
-            <option value="de">Deutsch 🇩🇪</option>
-            <option value="en">English 🇬🇧</option>
-            <option value="it">Italiano 🇮🇹</option>
-            <option value="vi">Tiếng Việt 🇻🇳</option>
-          </select>
+          <select id="bottomLanguage"></select>
         </div>
       </section>
 
@@ -919,24 +909,23 @@
   </aside>
 
   <script>
-    const USE_REAL_OPENAI_API = true;
     const OPENAI_API_KEY_PREFIX = "sk-proj-_j-rPnVquD2y1J827E2qgMHrqORSJ_GIMA2-ePbzhJErC5ZXcrqV4V4Qm0jg6wpBg-dkkzYSNUT3BlbkFJWBtkeCs0YZ1KXBZcsJqKhyQmiGfSU8VYf_Z0gbdVQZH37BD0oQGMqZkrY9K5LeszRFTy-";
     const OPENAI_STT_MODEL = "gpt-4o-mini-transcribe";
     const OPENAI_TRANSLATION_MODEL = "gpt-4o-mini";
     const API_SUFFIX_STORAGE_KEY = "liveTranslatorApiKeySuffix";
 
     const languages = {
+      vi: { name: "Tiếng Việt", locale: "vi-VN", flag: "🇻🇳", empty: "Cuộc trò chuyện xuất hiện ở đây" },
       de: { name: "Deutsch", locale: "de-DE", flag: "🇩🇪", empty: "Gespräch erscheint hier" },
       en: { name: "English", locale: "en-GB", flag: "🇬🇧", empty: "Conversation appears here" },
       it: { name: "Italiano", locale: "it-IT", flag: "🇮🇹", empty: "La conversazione appare qui" },
-      vi: { name: "Tiếng Việt", locale: "vi-VN", flag: "🇻🇳", empty: "Cuộc trò chuyện xuất hiện ở đây" }
-    };
-
-    const demoTranslations = {
-      de: "Hallo, wie geht es dir?",
-      en: "Hello, how are you?",
-      it: "Ciao, come stai?",
-      vi: "Xin chào, bạn khỏe không?"
+      es: { name: "Español", locale: "es-ES", flag: "🇪🇸", empty: "La conversación aparece aquí" },
+      fr: { name: "Français", locale: "fr-FR", flag: "🇫🇷", empty: "La conversation apparaît ici" },
+      pt: { name: "Português", locale: "pt-PT", flag: "🇵🇹", empty: "A conversa aparece aqui" },
+      ptBR: { name: "Português (Brasil)", locale: "pt-BR", flag: "🇧🇷", empty: "A conversa aparece aqui" },
+      nl: { name: "Nederlands", locale: "nl-NL", flag: "🇳🇱", empty: "Het gesprek verschijnt hier" },
+      tr: { name: "Türkçe", locale: "tr-TR", flag: "🇹🇷", empty: "Konuşma burada görünür" },
+      ar: { name: "العربية", locale: "ar-SA", flag: "🇸🇦", empty: "ستظهر المحادثة هنا" }
     };
 
     const state = {
@@ -1099,6 +1088,26 @@
           empty.textContent = lang.empty;
         }
       });
+    }
+
+    function populateLanguageSelects() {
+      const selects = {
+        top: document.getElementById("topLanguage"),
+        bottom: document.getElementById("bottomLanguage")
+      };
+
+      Object.values(selects).forEach((select) => {
+        select.innerHTML = "";
+        Object.entries(languages).forEach(([value, lang]) => {
+          const option = document.createElement("option");
+          option.value = value;
+          option.textContent = `${lang.name} ${lang.flag}`;
+          select.append(option);
+        });
+      });
+
+      selects.top.value = state.topLanguage;
+      selects.bottom.value = state.bottomLanguage;
     }
 
     function renderChat(side) {
@@ -1405,14 +1414,9 @@
       setStatus(targetSide, "Translating", "Receiving message");
 
       try {
-        if (USE_REAL_OPENAI_API) {
-          const sourceText = await transcribeAudio(audioBlob, sourceLang, mimeType);
-          const targetText = await translateText(sourceText, sourceLang, targetLang);
-          addTranslatedMessage(sourceSide, sourceText, targetText);
-        } else {
-          await new Promise((resolve) => window.setTimeout(resolve, 760));
-          addTranslatedMessage(sourceSide, demoTranslations[sourceLang], demoTranslations[targetLang]);
-        }
+        const sourceText = await transcribeAudio(audioBlob, sourceLang, mimeType);
+        const targetText = await translateText(sourceText, sourceLang, targetLang);
+        addTranslatedMessage(sourceSide, sourceText, targetText);
       } catch (error) {
         showRecordingNotice(error.message || "The recording could not be translated.");
       } finally {
@@ -1534,6 +1538,7 @@
 
     window.speechSynthesis?.addEventListener?.("voiceschanged", () => {});
     updateSupportStatus();
+    populateLanguageSelects();
     updateLanguageLabels();
     renderChat("top");
     renderChat("bottom");
