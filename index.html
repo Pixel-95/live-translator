@@ -259,6 +259,14 @@
       transform: translateY(-50%);
     }
 
+    .top-language-overlay {
+      position: absolute;
+      left: calc(14px + var(--safe-left));
+      top: calc(33px + var(--safe-top));
+      z-index: 7;
+      transform: rotate(180deg);
+    }
+
     .floating-language-button {
       width: 42px;
       height: 42px;
@@ -371,12 +379,8 @@
       min-width: 96px;
     }
 
-    .side.top .side-actions {
-      grid-column: 3;
-      justify-self: end;
-    }
-
     .record-wrap {
+      grid-column: 2;
       position: relative;
       width: 78px;
       height: 78px;
@@ -752,6 +756,7 @@
         <path d="M4 7h16M4 12h16M4 17h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
       </svg>
     </button>
+    <button class="floating-language-button top-language-overlay" type="button" data-language-button="top" aria-label="Upper language">🇬🇧</button>
     <section class="side top" data-side="top">
       <div class="processing-wash"></div>
       <div class="side-shell">
@@ -761,7 +766,6 @@
 
         <div class="controls">
           <div class="side-actions">
-            <button class="floating-language-button" type="button" data-language-button="top" aria-label="Upper language">🇬🇧</button>
             <button class="cancel-button" type="button" data-cancel="top" aria-label="Cancel recording">
               <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
                 <path d="M8 7h8m-5-3h2m-7 6h12l-1 10H7L6 10Z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
