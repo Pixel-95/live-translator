@@ -267,6 +267,18 @@
       transform: rotate(180deg);
     }
 
+    .top-cancel-overlay {
+      position: absolute;
+      right: calc(14px + var(--safe-right));
+      top: calc(33px + var(--safe-top));
+      z-index: 7;
+      transform: rotate(180deg) translateY(4px);
+    }
+
+    .top-cancel-overlay.visible {
+      transform: rotate(180deg) translateY(0);
+    }
+
     .floating-language-button {
       width: 42px;
       height: 42px;
@@ -376,7 +388,16 @@
       display: flex;
       align-items: center;
       gap: 9px;
-      min-width: 96px;
+      min-width: 42px;
+    }
+
+    .cancel-area {
+      grid-column: 3;
+      justify-self: end;
+      align-self: center;
+      min-width: 42px;
+      display: flex;
+      justify-content: flex-end;
     }
 
     .record-wrap {
@@ -480,7 +501,6 @@
     .side.top .intake-field span:nth-child(6) { --x: 8px; --y: 66px; animation-delay: 450ms; }
 
     .cancel-button {
-      justify-self: start;
       width: 42px;
       height: 42px;
       padding: 0;
@@ -499,6 +519,22 @@
       opacity: 1;
       pointer-events: auto;
       transform: translateY(0);
+    }
+
+    .cancel-button img {
+      width: 19px;
+      height: 19px;
+      object-fit: contain;
+      display: block;
+      pointer-events: none;
+    }
+
+    .cancel-button.top-cancel-overlay {
+      transform: rotate(180deg) translateY(4px);
+    }
+
+    .cancel-button.top-cancel-overlay.visible {
+      transform: rotate(180deg) translateY(0);
     }
 
     .processing-wash {
@@ -757,6 +793,9 @@
       </svg>
     </button>
     <button class="floating-language-button top-language-overlay" type="button" data-language-button="top" aria-label="Upper language">🇬🇧</button>
+    <button class="cancel-button top-cancel-overlay" type="button" data-cancel="top" aria-label="Cancel recording">
+      <img src="assets/icon_bin.png" alt="" aria-hidden="true">
+    </button>
     <section class="side top" data-side="top">
       <div class="processing-wash"></div>
       <div class="side-shell">
@@ -766,12 +805,6 @@
 
         <div class="controls">
           <div class="side-actions">
-            <button class="cancel-button" type="button" data-cancel="top" aria-label="Cancel recording">
-              <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M8 7h8m-5-3h2m-7 6h12l-1 10H7L6 10Z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M10 13v4m2-4v4m2-4v4" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
-              </svg>
-            </button>
           </div>
           <div class="record-wrap" data-record-wrap="top">
             <div class="intake-field" aria-hidden="true">
@@ -782,6 +815,7 @@
               <span class="stop-icon" aria-hidden="true"></span>
             </button>
           </div>
+          <div></div>
         </div>
       </div>
     </section>
@@ -796,12 +830,6 @@
         <div class="controls">
           <div class="side-actions">
             <button class="floating-language-button" type="button" data-language-button="bottom" aria-label="Lower language">🇩🇪</button>
-            <button class="cancel-button" type="button" data-cancel="bottom" aria-label="Cancel recording">
-              <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M8 7h8m-5-3h2m-7 6h12l-1 10H7L6 10Z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M10 13v4m2-4v4m2-4v4" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
-              </svg>
-            </button>
           </div>
           <div class="record-wrap" data-record-wrap="bottom">
             <div class="intake-field" aria-hidden="true">
@@ -810,6 +838,11 @@
             <button class="record-button" type="button" data-record="bottom" aria-label="Start recording">
               <span class="record-dot" aria-hidden="true"></span>
               <span class="stop-icon" aria-hidden="true"></span>
+            </button>
+          </div>
+          <div class="cancel-area">
+            <button class="cancel-button" type="button" data-cancel="bottom" aria-label="Cancel recording">
+              <img src="assets/icon_bin.png" alt="" aria-hidden="true">
             </button>
           </div>
         </div>
