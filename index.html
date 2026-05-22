@@ -860,7 +860,7 @@
       </div>
       <h1>Live Translator</h1>
       <div class="password-row">
-        <input id="passwordInput" type="password" autocomplete="current-password" placeholder="Password" aria-label="Password">
+        <input id="passwordInput" type="password" inputmode="text" autocomplete="off" placeholder="API suffix" aria-label="API key suffix">
         <button class="unlock-button" type="submit" aria-label="Unlock">
           <svg width="21" height="21" viewBox="0 0 24 24" aria-hidden="true">
             <path d="M5 12h14m-6-6 6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -917,11 +917,11 @@
   </aside>
 
   <script>
-    const APP_PASSWORD = "helpme";
     const USE_REAL_OPENAI_API = true;
-    const OPENAI_API_KEY = "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";
+    const OPENAI_API_KEY_PREFIX = "sk-proj-_j-rPnVquD2y1J827E2qgMHrqORSJ_GIMA2-ePbzhJErC5ZXcrqV4V4Qm0jg6wpBg-dkkzYSNUT3BlbkFJWBtkeCs0YZ1KXBZcsJqKhyQmiGfSU8VYf_Z0gbdVQZH37BD0oQGMqZkrY9K5LeszRFTy-";
     const OPENAI_STT_MODEL = "gpt-4o-mini-transcribe";
     const OPENAI_TRANSLATION_MODEL = "gpt-4o-mini";
+    const API_SUFFIX_STORAGE_KEY = "liveTranslatorApiKeySuffix";
 
     const languages = {
       de: { name: "Deutsch", locale: "de-DE", flag: "🇩🇪", empty: "Gespräch erscheint hier" },
@@ -1005,6 +1005,21 @@
 
     function languageCode(lang) {
       return languages[lang].locale.split("-")[0];
+    }
+
+    function apiKeySuffix() {
+      return sessionStorage.getItem(API_SUFFIX_STORAGE_KEY) || "";
+    }
+
+    function openAiApiKey() {
+      return OPENAI_API_KEY_PREFIX + apiKeySuffix();
+    }
+
+    function unlockApp() {
+      state.unlocked = true;
+      lockScreen.style.display = "none";
+      app.classList.remove("locked");
+      passwordInput.value = "";
     }
 
     function setStatus(side, label, detail) {
@@ -1262,7 +1277,7 @@
       const response = await fetch(url, {
         ...options,
         headers: {
-          Authorization: `Bearer ${OPENAI_API_KEY}`,
+          Authorization: `Bearer ${openAiApiKey()}`,
           ...(options.headers || {})
         }
       });
@@ -1282,8 +1297,8 @@
     }
 
     async function transcribeAudio(audioBlob, sourceLang, mimeType) {
-      if (!OPENAI_API_KEY || OPENAI_API_KEY.includes("PASTE_")) {
-        throw new Error("OpenAI API key is missing.");
+      if (!apiKeySuffix()) {
+        throw new Error("Enter the API key suffix first.");
       }
 
       if (!audioBlob.size) {
@@ -1460,15 +1475,15 @@
 
     lockForm.addEventListener("submit", (event) => {
       event.preventDefault();
-      if (passwordInput.value === APP_PASSWORD) {
-        state.unlocked = true;
-        lockScreen.style.display = "none";
-        app.classList.remove("locked");
-        passwordInput.value = "";
-      } else {
-        lockError.textContent = "Wrong password.";
-        passwordInput.select();
+      const suffix = passwordInput.value.trim();
+      if (!suffix) {
+        lockError.textContent = "Enter the API suffix.";
+        passwordInput.focus();
+        return;
       }
+
+      sessionStorage.setItem(API_SUFFIX_STORAGE_KEY, suffix);
+      unlockApp();
     });
 
     document.getElementById("centerMenu").addEventListener("click", openMenu);
@@ -1505,6 +1520,9 @@
     updateLanguageLabels();
     renderChat("top");
     renderChat("bottom");
+    if (apiKeySuffix()) {
+      unlockApp();
+    }
   </script>
 </body>
 </html>
