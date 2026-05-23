@@ -915,17 +915,20 @@
     const API_SUFFIX_STORAGE_KEY = "liveTranslatorApiKeySuffix";
 
     const languages = {
-      vi: { name: "Tiếng Việt", locale: "vi-VN", flag: "🇻🇳", empty: "Cuộc trò chuyện xuất hiện ở đây" },
+      ar: { name: "العربية", locale: "ar-SA", flag: "🇸🇦", empty: "ستظهر المحادثة هنا" },
       de: { name: "Deutsch", locale: "de-DE", flag: "🇩🇪", empty: "Gespräch erscheint hier" },
       en: { name: "English", locale: "en-GB", flag: "🇬🇧", empty: "Conversation appears here" },
-      it: { name: "Italiano", locale: "it-IT", flag: "🇮🇹", empty: "La conversazione appare qui" },
       es: { name: "Español", locale: "es-ES", flag: "🇪🇸", empty: "La conversación aparece aquí" },
+      fi: { name: "Suomi", locale: "fi-FI", flag: "🇫🇮", empty: "Keskustelu näkyy tässä" },
       fr: { name: "Français", locale: "fr-FR", flag: "🇫🇷", empty: "La conversation apparaît ici" },
+      it: { name: "Italiano", locale: "it-IT", flag: "🇮🇹", empty: "La conversazione appare qui" },
+      nl: { name: "Nederlands", locale: "nl-NL", flag: "🇳🇱", empty: "Het gesprek verschijnt hier" },
+      no: { name: "Norsk", locale: "nb-NO", flag: "🇳🇴", empty: "Samtalen vises her" },
       pt: { name: "Português", locale: "pt-PT", flag: "🇵🇹", empty: "A conversa aparece aqui" },
       ptBR: { name: "Português (Brasil)", locale: "pt-BR", flag: "🇧🇷", empty: "A conversa aparece aqui" },
-      nl: { name: "Nederlands", locale: "nl-NL", flag: "🇳🇱", empty: "Het gesprek verschijnt hier" },
+      sv: { name: "Svenska", locale: "sv-SE", flag: "🇸🇪", empty: "Konversationen visas här" },
       tr: { name: "Türkçe", locale: "tr-TR", flag: "🇹🇷", empty: "Konuşma burada görünür" },
-      ar: { name: "العربية", locale: "ar-SA", flag: "🇸🇦", empty: "ستظهر المحادثة هنا" }
+      vi: { name: "Tiếng Việt", locale: "vi-VN", flag: "🇻🇳", empty: "Cuộc trò chuyện xuất hiện ở đây" }
     };
 
     const state = {
@@ -1101,7 +1104,7 @@
         Object.entries(languages).forEach(([value, lang]) => {
           const option = document.createElement("option");
           option.value = value;
-          option.textContent = `${lang.name} ${lang.flag}`;
+          option.textContent = `${lang.name}\u200e ${lang.flag}`;
           select.append(option);
         });
       });
